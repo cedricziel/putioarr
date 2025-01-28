@@ -11,6 +11,7 @@ name: Release Build
 env:
   REGISTRY_IMAGE: ghcr.io/cedricziel/putioarr
 
+
 permissions:
   contents: read
   packages: write
