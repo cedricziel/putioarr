@@ -56,6 +56,9 @@ async fn download_target(app_data: &Data<AppData>, target: &DownloadTarget) -> R
         TargetType::File => {
             // Delete file if already exists
             if !Path::new(&target.to).exists() {
+                // ensure the parent directory exists
+                create_directory_from_filepath(&target.to)?;
+
                 info!("{}: download {}", &target, "started".yellow());
                 match fetch(target, app_data.config.uid).await {
                     Ok(_) => info!("{}: download {}", &target, "succeeded".green()),
@@ -87,6 +90,19 @@ async fn fetch(target: &DownloadTarget, uid: u32) -> Result<()> {
     }
 
     fs::rename(&tmp_path, &target.to)?;
+
+    Ok(())
+}
+
+fn create_directory_from_filepath(file_path: &str) -> std::io::Result<()> {
+    // Convert the file path to a Path
+    let path = Path::new(file_path);
+
+    // Get the parent directory of the file
+    if let Some(parent) = path.parent() {
+        // Create the directory and all its parent components recursively
+        fs::create_dir_all(parent)?;
+    }
 
     Ok(())
 }
