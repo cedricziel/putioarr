@@ -57,7 +57,13 @@ async fn download_target(app_data: &Data<AppData>, target: &DownloadTarget) -> R
             // Delete file if already exists
             if !Path::new(&target.to).exists() {
                 // ensure the parent directory exists
-                create_directory_from_filepath(&target.to)?;
+                match create_directory_from_filepath(&target.to) {
+                    Ok(_) => info!("{}: directory created", &target.to),
+                    Err(e) => {
+                        error!("{}: directory creation failed: {}", &target.to, e);
+                        bail!(e)
+                    }
+                }
 
                 info!("{}: download {}", &target, "started".yellow());
                 match fetch(target, app_data.config.uid).await {
@@ -100,6 +106,7 @@ fn create_directory_from_filepath(file_path: &str) -> std::io::Result<()> {
 
     // Get the parent directory of the file
     if let Some(parent) = path.parent() {
+        info!("Creating directory: {}", parent.display());
         // Create the directory and all its parent components recursively
         fs::create_dir_all(parent)?;
     }
